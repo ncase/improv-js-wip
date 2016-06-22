@@ -1,0 +1,6 @@
+/* Scrubbing Numbers */
+.improv-scrub{
+	font-weight: bold;
+	border-bottom: 2px dotted #000;
+	cursor: col-resize;
+}

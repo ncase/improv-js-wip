@@ -1,0 +1,35 @@
+body {
+	margin: 50px;
+	font-size: 20px;
+	font-weight: 100;
+	font-family: sans-serif;
+}
+
+.axis{
+	font: 10px sans-serif;
+}
+.axis path,
+.axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+.axis .label{
+	font: 12px sans-serif;
+	font-weight: bold;
+}
+
+.line {
+	fill: none;
+	stroke: steelblue;
+	stroke-width: 4px;
+}
+.line.projection {
+	opacity: 0.5;
+	stroke-width: 1px;
+}
+
+.improv-scrub{
+	color:steelblue;
+	border-bottom: 2px dotted steelblue;
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<head>
+	<title>What If? U.S. Incarceration Rate</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="../../src/improv.css">
+	<link rel="stylesheet" type="text/css" href="incarceration.css">
+</head>
+<body>
+
+	<div id="input">
+	If the U.S. incarceration rate falls
+	{NUMBER fall: min=0, max=100, step=0.1}
+	&plusmn;
+	{NUMBER uncertainty: min=0, max=100, step=0.1}
+	percent per year...
+	</div>
+
+</body>
+<script>
+
+var params = {
+	fall: 2,
+	uncertainty: 0.5
+};
+
+</script>
+<script src="../d3.min.js"></script>
+<script src="incarceration.js"></script>
+<script src="../../src/improv.js"></script>
