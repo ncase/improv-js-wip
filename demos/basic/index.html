@@ -7,9 +7,10 @@
 <body>
 	<div id="box"></div>
 	<div id="input">
-	a {CHOOSE color: firebrick, coral, gold, seagreen, skyblue, rebeccapurple, plum} box,
+	A {CHOOSE color: firebrick, coral, gold, seagreen, skyblue, rebeccapurple, plum} box,
 	{NUMBER width: min=1, step=1, suffix=pixels} wide and
 	{NUMBER height: min=1, step=1, suffix=pixels} tall.
+	And the box {TOGGLE corners: on=should, off=should not} have rounded corners.
 	<br><br>
 	say what again? the box's color is "{ECHO color}",
 	and its dimensions are {ECHO width} x {ECHO height},
@@ -29,7 +30,8 @@ var improv = new Improv("#input",{
 	data: {
 		width: 50,
 		height: 50,
-		color: "firebrick"
+		color: "firebrick",
+		corners: false
 	},
 
 	// When you change the inputs, the box changes
@@ -39,6 +41,7 @@ var improv = new Improv("#input",{
 		box.style.background = data.color;
 		box.style.width = data.width;
 		box.style.height = data.height;
+		box.style.borderRadius = data.corners ? "20px" : "0px";
 
 		// Calculations
 		data.area = data.width * data.height;

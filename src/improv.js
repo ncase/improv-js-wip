@@ -32,6 +32,8 @@ var Improv = function(dom,{
 - markup: Optional. If provided, it'll use this string to
 	create widgets, instead of the given DOM's markup.
 
+// TODO: Throw those errors just right
+
 **************************/
 ///////////////////////////
 
@@ -130,6 +132,10 @@ IWidgets.CLASS = function(improv, propName, args)
 - propName: a string like "object.path.name"
 - args: an array of [{key:"foo", value:"bar"}...]
 
+// TODO: widgets with "drag" instruction and such
+// TODO: a to-implement "change" func, separate from "update". Clear up confusion.
+// TODO: a freeform text widget?
+
 **************************/
 ///////////////////////////
 
@@ -195,6 +201,9 @@ Arguments:
 - suffix: what text comes after the number
 
 // TODO: plural(s), too.
+// TODO: Two inputs with same variable - SYNCHRONIZE UPDATE
+// TODO: a "drag" instruction
+// TODO: ??? Can type ???
 
 ***************/
 
@@ -212,7 +221,7 @@ IWidgets.NUMBER = function(improv, propName, args){
 
 	// Span with style
 	var dom = document.createElement("span");
-	dom.className = "improv-scrub";
+	dom.className = "improv-number";
 	self.dom = dom;
 
 	// Scrubbable UI
@@ -297,6 +306,8 @@ CHOOSE - A dropdown selection.
 
 Arguments: just the key-value array
 
+// TODO: Two inputs with same variable - SYNCHRONIZE UPDATE
+
 ***************/
 
 IWidgets.CHOOSE = function(improv, propName, args){
@@ -337,8 +348,6 @@ ECHO - Just outputs out a variable. *Read-only!*
 
 Arguments: none.
 
-// TODO: HOLY FUCK PLEASE ESCAPE CHARS
-
 ***************/
 
 IWidgets.ECHO = function(improv, propName, args){
@@ -352,10 +361,77 @@ IWidgets.ECHO = function(improv, propName, args){
 
 	// When updates, just echo the value.
 	self.update = function(){
-		dom.innerHTML = self.getValue();
+		var value = self.getValue();
+		if(!value) value="";
+		value = String(value);
+		dom.innerHTML = _escapeHtml(value);
 	};
 
 	// Update once!
 	self.update();
 
+};
+
+/***************
+
+TOGGLE - For boolean variables. Click to turn on or off.
+
+Arguments:
+- on: button text when variable is true
+- off: button text when variable is false
+
+***************/
+
+IWidgets.TOGGLE = function(improv, propName, args){
+	
+	var self = this;
+	IWidgets._BASE_.apply(self, arguments);
+
+	// Just a Span
+	var dom = document.createElement("span");
+	dom.className = "improv-toggle";
+	self.dom = dom;
+
+	// Flip it when you click it
+	dom.onclick = function(){
+
+		// Get it, flip it, set it.
+		var value = self.getValue();
+		value = !value;
+		self.setValue(value);
+
+		// CHANGE THE DOM
+		self.onchange();
+
+	};
+
+	// Change the text to be whatever
+	var a = self.arg;
+	self.onchange = function(){
+		var value = self.getValue();
+		var text = value ? a("on") : a("off"); // The "on" or "off" text?
+		dom.innerHTML = _escapeHtml(text);
+	};
+
+	// Initial change!
+	self.onchange();
+
+};
+
+///////////////////////////
+/**************************
+
+RANDOM HELPER FUNCTIONS
+
+**************************/
+///////////////////////////
+
+// Escape Unsafe Characters
+var _escapeHtml = function(unsafe){
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
 };

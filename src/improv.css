@@ -1,6 +1,21 @@
-/* Scrubbing Numbers */
-.improv-scrub{
+/* NUMBER - Scrubbing */
+.improv-number{
 	font-weight: bold;
 	border-bottom: 2px dotted #000;
 	cursor: col-resize;
+}
+
+/* TOGGLE - A button */
+.improv-toggle{
+	font-weight: bold;
+	border-bottom: 2px dotted #000;
+	cursor: pointer;
+}
+
+/* no selecty plz */
+.improv-number, .improv-toggle{
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
 }
