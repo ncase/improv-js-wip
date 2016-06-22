@@ -50,8 +50,15 @@ var Improv = function(dom, config){
 	self.widgets = [];
 	self.data = config.data;
 	self.update = function(propName){
+
+		// Run the user-given update function
 		config.update(self.data, propName);
-		// TO-DO: Update widgets, like output?
+
+		// Update all widgets
+		self.widgets.forEach(function(widget){
+			widget.update();
+		});
+
 	};
 
 	// CREATE THE WIDGETS
@@ -95,19 +102,27 @@ var Improv = function(dom, config){
 		
 		// CREATE THAT WIDGET
 		var WidgetClass = IWidgets[className];
+		if(!WidgetClass) throw Error("No widget class named '"+className+"'!");
 		var widget = new WidgetClass(self, propName, args);
 		self.widgets.push(widget); // add to array
 		node.parentNode.replaceChild(widget.dom, node); // replaceChild
 
 	});
 
+	// 3. Update!
+	self.update();
+
 };
 
 ///////////////////////////
 /**************************
 
+IMPROV WIDGETS
+
+In the HTML:
 {CLASS propName: key1=val1, key2=val2, key3, key4...}
 
+In the JavaScript:
 IWidgets.CLASS = function(improv, propName, args)
 
 - CLASS: the class type of this widget
@@ -162,11 +177,14 @@ IWidgets._BASE_ = function(improv, propName, args){
 		improv.update(propName);
 	};
 
+	// Update - TO IMPLEMENT
+	self.update = function(){};
+
 };
 
 /***************
 
-A scrubbable number.
+NUMBER - A scrubbable number.
 
 Arguments:
 - min: minimum number allowed
@@ -176,7 +194,7 @@ Arguments:
 - prefix: what text comes before the number
 - suffix: what text comes after the number
 
-// TODO: plurals, too.
+// TODO: plural(s), too.
 
 ***************/
 
@@ -275,7 +293,7 @@ IWidgets.NUMBER.drag = 2;
 
 /***************
 
-A dropdown selection.
+CHOOSE - A dropdown selection.
 
 Arguments: just the key-value array
 
@@ -310,5 +328,34 @@ IWidgets.CHOOSE = function(improv, propName, args){
 	dom.onchange = function(){
 		self.setValue(dom.value);
 	};
+
+};
+
+/***************
+
+ECHO - Just outputs out a variable. *Read-only!*
+
+Arguments: none.
+
+// TODO: HOLY FUCK PLEASE ESCAPE CHARS
+
+***************/
+
+IWidgets.ECHO = function(improv, propName, args){
+	
+	var self = this;
+	IWidgets._BASE_.apply(self, arguments);
+
+	// Just a Span
+	var dom = document.createElement("span");
+	self.dom = dom;
+
+	// When updates, just echo the value.
+	self.update = function(){
+		dom.innerHTML = self.getValue();
+	};
+
+	// Update once!
+	self.update();
 
 };

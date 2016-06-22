@@ -1,0 +1,49 @@
+<!doctype>
+<html>
+<head>
+	<title>a box</title>
+	<link rel="stylesheet" type="text/css" href="../../src/improv.css">
+</head>
+<body>
+	<div id="box"></div>
+	<div id="input">
+	a {CHOOSE color: firebrick, coral, gold, seagreen, skyblue, rebeccapurple, plum} box,
+	{NUMBER width: min=1, step=1, suffix=pixels} wide and
+	{NUMBER height: min=1, step=1, suffix=pixels} tall.
+	<br><br>
+	say what again? the box's color is "{ECHO color}",
+	and its dimensions are {ECHO width} x {ECHO height},
+	making it {ECHO area} pixels squared in area.
+	<br><br>
+	Dang right.
+	</div>
+</body>
+</html>
+
+<script src="../../src/improv.js"></script>
+<script>
+var box = document.querySelector("#box");
+var improv = new Improv("#input",{
+
+	// Starts as a 50x50 red box
+	data: {
+		width: 50,
+		height: 50,
+		color: "firebrick"
+	},
+
+	// When you change the inputs, the box changes
+	update: function(data){
+
+		// Draw Box
+		box.style.background = data.color;
+		box.style.width = data.width;
+		box.style.height = data.height;
+
+		// Calculations
+		data.area = data.width * data.height;
+
+	}
+
+});
+</script>

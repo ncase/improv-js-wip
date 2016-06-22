@@ -95,7 +95,7 @@ d3.csv("incarceration.csv", type, function(error, _data){
 	}
 
 	// DRAW
-	draw();
+	// draw();
 
 	// IMPROV
 	var improv = new Improv("#input",{
