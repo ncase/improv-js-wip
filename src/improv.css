@@ -1,16 +1,54 @@
 /* NUMBER - Scrubbing */
 .improv-number{
 	font-weight: bold;
-	border-bottom: 2px dotted #000;
+	border-bottom: 1px dashed #000;
 	cursor: col-resize;
 }
 
 /* TOGGLE - A button */
 .improv-toggle{
 	font-weight: bold;
-	border-bottom: 2px dotted #000;
+	border-bottom: 1px dashed #000;
 	cursor: pointer;
 }
+
+/* LIST - Lists of other improvs */
+.improv-list{}
+/* Space dat out */
+.improv-list > ol > li{ margin-bottom: 0.5em; }
+.improv-list > ol{ margin-bottom: 0.5em; }
+.improv-list > ol ol{ margin-top: 0.5em; }
+/* Just goes three layers deep */
+.improv-list .improv-list > ol{ list-style-type: lower-alpha; }
+.improv-list .improv-list .improv-list > ol{ list-style-type: lower-roman; }
+/* New button, with invisible select */
+.improv-list > #improv-list-new{
+	position: relative;
+	display: inline-block;
+	color: #aaa;
+	border: 1px solid #bbb;
+	padding: 0.2em 0.5em;
+	border-radius: 1em;
+}
+.improv-list > #improv-list-new > select{
+	position: absolute;
+	top:0; left:0;
+	width: 100%; height:100%;
+	opacity: 0;
+	cursor: pointer;
+}
+/* Delete button */
+.improv-list li {
+	position: relative;
+}
+.improv-list li #improv-list-delete{
+	position: absolute;
+	top: 0;
+	left: -2.3em;
+	color: #bbb;
+	cursor: pointer;
+}
+
 
 /* no selecty plz */
 .improv-number, .improv-toggle{

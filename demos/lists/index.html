@@ -1,0 +1,64 @@
+<!doctype>
+<html>
+<head>
+	<title>a box</title>
+	<link rel="stylesheet" type="text/css" href="../../src/improv.css">
+</head>
+<body style="font-size:18px; font-weight:100; font-family:sans-serif">
+	<div id="input">
+	Do the following dance moves:
+	{LIST moves: from=list_dances}
+	</div>
+</body>
+</html>
+
+<script src="../../src/improv.js"></script>
+<script>
+var box = document.querySelector("#box");
+var improv = new Improv("#input",{
+
+	// Data: Start with simple Hokey Pokey
+	data: {
+		moves: [
+			{
+				type: "hokey",
+				data: { side:"right", limb:"arm", dir:"in" }
+			},
+			{
+				type: "hokey",
+				data: { side:"right", limb:"arm", dir:"out" }
+			}
+		]
+	},
+
+	// LIST OF DANCE MOVES
+	metadata:{
+		list_dances:[
+			{
+				type: "hokey",
+				label: "Put a given appendage in or out",
+				markup: "Put your {CHOOSE side: left,right} {CHOOSE limb: arm,leg} {CHOOSE dir: in,out}",
+				data: { side:"left", limb:"arm", dir:"in" }
+			},
+			{
+				type: "shake",
+				label: "Shake it all about, for X seconds",
+				markup: "Shake it all about, for {NUMBER time: min=1, suffix=seconds}",
+				data: { time:3 }
+			},
+			{
+				type: "repeat",
+				label: "Repeat these dance moves X times",
+				markup: "Repeat these dance moves {NUMBER count: min=1, suffix=times}: {LIST moves: from=list_dances}",
+				data: { count:3, moves:[] }
+			}
+		]
+	},
+
+	// When you change the inputs, the box changes
+	update: function(data, propName){
+		console.log("sure did update");
+	}
+
+});
+</script>

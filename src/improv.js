@@ -32,6 +32,8 @@ var Improv = function(dom,{
 - markup: Optional. If provided, it'll use this string to
 	create widgets, instead of the given DOM's markup.
 
+- metadata: For any other crap that doesn't fit. Optional.
+
 // TODO: Throw those errors just right
 
 **************************/
@@ -50,7 +52,12 @@ var Improv = function(dom, config){
 		dom = self.dom;
 	}
 	self.widgets = [];
+	self.config = config;
+	self.metadata = config.metadata || {};
 	self.data = config.data;
+
+	// Update function
+	config.update = config.update || function(){};
 	self.update = function(propName){
 
 		// Run the user-given update function
@@ -214,10 +221,10 @@ IWidgets.NUMBER = function(improv, propName, args){
 
 	// Arguments, and their defaults
 	var a = self.arg;
-	a("min",function(value){ return value ? parseFloat(value) : IWidgets.NUMBER.min }); // -Infinity; });
-	a("max",function(value){ return value ? parseFloat(value) : IWidgets.NUMBER.max }); // Infinity; });
-	a("step",function(value){ return value ? parseFloat(value) : IWidgets.NUMBER.step }); // 1; });
-	a("drag",function(value){ return value ? parseInt(drag) : IWidgets.NUMBER.drag }); // 10; });
+	a("min",function(value){ return value ? parseFloat(value) : IWidgets.NUMBER.min });
+	a("max",function(value){ return value ? parseFloat(value) : IWidgets.NUMBER.max });
+	a("step",function(value){ return value ? parseFloat(value) : IWidgets.NUMBER.step });
+	a("drag",function(value){ return value ? parseInt(drag) : IWidgets.NUMBER.drag });
 
 	// Span with style
 	var dom = document.createElement("span");
@@ -320,19 +327,7 @@ IWidgets.CHOOSE = function(improv, propName, args){
 	var selectedValue = self.getValue();
 
 	// Create <select> dom
-	var dom = document.createElement("select");
-	for(var i=0;i<options.length;i++){
-
-		var o = options[i];
-
-		// Create & append <option>s
-		var optionDOM = document.createElement("option");
-		optionDOM.innerHTML = o.key;
-		optionDOM.setAttribute("value",o.value);
-		if(o.value==selectedValue) optionDOM.setAttribute("selected","true");
-		dom.appendChild(optionDOM);
-
-	}
+	var dom = _createSelect(options, selectedValue);
 	self.dom = dom;
 
 	// Set data when you make a selection
@@ -380,6 +375,9 @@ Arguments:
 - on: button text when variable is true
 - off: button text when variable is false
 
+// TODO: A different UI from "Number"?
+// TODO: Instruction: "click" to toggle?
+
 ***************/
 
 IWidgets.TOGGLE = function(improv, propName, args){
@@ -418,6 +416,197 @@ IWidgets.TOGGLE = function(improv, propName, args){
 
 };
 
+/***************
+
+LIST - Create a list of *other* Improvs. THIS is the power tool.
+
+Arguments:
+- from: the name of the array in Improv metadata, to make new items.
+- button: Optional. What the "new" button should say. Default: "+new"
+ 
+Item Configs should be an array of objects like this:
+[
+	{
+		type: "bottles",
+		label: "X bottles of beer on the wall",
+		markup: "{NUMBER count} bottles of beer on the wall",
+		data: { count:99 } // default data
+	}
+]
+
+// TODO: A different UI from "Number"?
+// TODO: Instruction: "click" to toggle?
+
+***************/
+
+IWidgets.LIST = function(improv, propName, args){
+	
+	var self = this;
+	IWidgets._BASE_.apply(self, arguments);
+
+	////////////////////////
+	// METADATA & DOM //////
+	////////////////////////
+
+	// Arguments
+	var a = self.arg;
+
+	// Metadata: Item Configs
+	self.itemConfigs = improv.metadata[a("from")];
+
+	// Get Item Config by type
+	self.getItemConfigByType = function(type){
+		for(var i=0; i<self.itemConfigs.length; i++){
+			var itemConfig = self.itemConfigs[i];
+			if(itemConfig.type==type) return itemConfig;
+		}
+	};
+
+	// The DOM is just a container.
+	// Later, it'll contain an ordered list & a choose selection
+	var dom = document.createElement("div");
+	dom.className = "improv-list";
+	self.dom = dom;
+
+	/////////////////////////
+	// LIST ITEM SHTUFF /////
+	/////////////////////////
+
+	// DOM for an ordered list
+	var listDOM = document.createElement("ol");
+	dom.appendChild(listDOM);
+
+	// Add an Improv item
+	// Item has type & data, that's it.
+	self.addItem = function(item){
+
+		// The item config!
+		var itemConfig = self.getItemConfigByType(item.type);
+
+		// If no data, CLONE the default
+		item.data = item.data || _clone(itemConfig.data);
+
+		// The new improv instance
+		var _QUIET = true; // no need to bubble when *first* adding it
+		var newImprov = new Improv({
+			data: item.data,
+			markup: itemConfig.markup,
+			metadata: _clone(improv.metadata), // just pass it on, whatever
+			update: function(){
+				if(_QUIET) return;
+				improv.update(propName); // bubble it up. maybe.
+			}
+		});
+		_QUIET = false;
+
+		// Add its dom to the list!
+		self.addItemDOM(item, newImprov.dom);
+
+	};
+
+	// Add item DOM
+	self.addItemDOM = function(item, dom){
+
+		// Create <li> element
+		var li = document.createElement("li");
+		li.appendChild(dom);
+		listDOM.appendChild(li);
+
+		// The delete button!
+		var deleteButton = document.createElement("span");
+		deleteButton.id = "improv-list-delete";
+		deleteButton.innerHTML = "⨂";
+		dom.appendChild(deleteButton);
+
+		// On click, BYE BYE
+		deleteButton.onclick = function(){
+			self.deleteItem(item, li);
+		};
+
+	};
+
+	// DELETE item & its DOM
+	self.deleteItem = function(item, dom){
+
+		// Splice out item
+		var itemArray = self.getValue();
+		var index = itemArray.indexOf(item);
+		if(index<0) throw Error("Somehow, trying to delete an item that doesn't exist???");
+		itemArray.splice(index,1);
+
+		// Bye DOM
+		dom.parentElement.removeChild(dom);
+
+		// Finally, call update on improv.
+		improv.update(propName);
+
+	};
+
+	////////////////////////
+	// ADD ITEM SHTUFF /////
+	////////////////////////
+
+	// First, create the options
+	var options = [];
+
+	// The first option is a blank value
+	var newItemButtonLabel = a("button") || "+new";
+	options.push({
+		key: newItemButtonLabel,
+		value: ""
+	});
+
+	// And then for the rest, key is the label, value is the type
+	for(var i=0; i<self.itemConfigs.length; i++){
+		var itemConfig = self.itemConfigs[i];
+		options.push({
+			key: itemConfig.label,
+			value: itemConfig.type
+		});
+	}
+
+	// DOM for a <select> button to ADD A NEW ITEM
+	var newItemButton = document.createElement("span");
+	newItemButton.id = "improv-list-new";
+	newItemButton.innerHTML = newItemButtonLabel;
+	dom.appendChild(newItemButton);
+	var newItemSelect = _createSelect(options);
+	newItemButton.appendChild(newItemSelect);
+
+	// When it's changed, add that new item. And set it back.
+	newItemSelect.onchange = function(event){
+
+		// Unless it's blank, then nah.
+		var type = newItemSelect.value;
+		if(type=="") return;
+
+		// Add new item, to both actual array and DOM.
+		var newItem = {type:type};
+		var itemArray = self.getValue();
+		itemArray.push(newItem);
+		self.addItem(newItem);
+
+		// Finally, call update on improv.
+		improv.update(propName);
+
+		// Reset to value ""
+		newItemSelect.value = "";
+
+	};
+
+	/////////////////////
+	// SET UP AT FIRST //
+	/////////////////////
+
+	// Add all inital items. Yah.
+	var initialItems = self.getValue();
+	for(var i=0; i<initialItems.length; i++){
+		var item = initialItems[i];
+		self.addItem(item);
+	}
+
+};
+
 ///////////////////////////
 /**************************
 
@@ -434,4 +623,35 @@ var _escapeHtml = function(unsafe){
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
 		.replace(/'/g, "&#039;");
+};
+
+// Create <select> list
+var _createSelect = function(options, selectedValue){
+
+	// Arguments
+	options = options || [];
+
+	// Populate <select>
+	var dom = document.createElement("select");
+	for(var i=0;i<options.length;i++){
+
+		var o = options[i];
+
+		// Create & append <option>s
+		var optionDOM = document.createElement("option");
+		optionDOM.innerHTML = o.key;
+		optionDOM.setAttribute("value",o.value);
+		if(o.value==selectedValue) optionDOM.setAttribute("selected","true");
+		dom.appendChild(optionDOM);
+
+	}
+
+	// Return it!
+	return dom;
+
+}
+
+// Clone an object
+var _clone = function(object){
+	return JSON.parse(JSON.stringify(object));
 };
